@@ -1,13 +1,42 @@
+import 'package:authify/utils/animation/login_page_animation.dart';
 import 'package:flutter/material.dart';
 
-class LoginPage extends StatelessWidget {
-  const LoginPage({super.key});
+class AnimationLoginPage extends StatefulWidget {
+  const AnimationLoginPage({super.key});
+
+  @override
+  State<AnimationLoginPage> createState() => _AnimationLoginPageState();
+}
+
+class _AnimationLoginPageState extends State<AnimationLoginPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
 
   static late double _deviceHeight;
   static late double _deviceWidth;
 
   static const Color _primaryColor = Color.fromRGBO(125, 191, 211, 1.0);
   static const Color _secondaryColor = Color.fromRGBO(169, 224, 241, 1.0);
+
+  late EnterAnimation _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+      reverseDuration: const Duration(microseconds: 400),
+    );
+    _animation = EnterAnimation(_controller);
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _controller.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +47,7 @@ class LoginPage extends StatelessWidget {
       backgroundColor: _primaryColor,
       body: Align(
         alignment: Alignment.center,
-        child: Container(
+        child: SizedBox(
           width: _deviceWidth,
           height: _deviceHeight * 0.6,
           child: Column(
@@ -45,21 +74,35 @@ class LoginPage extends StatelessWidget {
 
   Widget _avatarWidget() {
     double circleD = _deviceHeight * 0.25;
-    return Container(
-      height: circleD,
-      width: circleD,
-      decoration: BoxDecoration(
-        color: _secondaryColor,
-        borderRadius: BorderRadius.circular(500),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/main_avatar.png'),
-        ),
-      ),
+    return AnimatedBuilder(
+      animation: _animation.controller,
+      builder: (BuildContext context, Widget? child) {
+        // print(_animation.circleSize);
+        return Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.diagonal3Values(
+            _animation.circleSize!.value,
+            _animation.circleSize!.value,
+            1,
+          ),
+          child: Container(
+            height: circleD,
+            width: circleD,
+            decoration: BoxDecoration(
+              color: _secondaryColor,
+              borderRadius: BorderRadius.circular(500),
+              image: const DecorationImage(
+                image: AssetImage('assets/images/main_avatar.png'),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   Widget _emailTextField() {
-    return Container(
+    return SizedBox(
       width: _deviceWidth * 0.70,
       child: const TextField(
         cursorColor: Colors.white,
@@ -84,7 +127,7 @@ class LoginPage extends StatelessWidget {
   }
 
   Widget _passwordTextField() {
-    return Container(
+    return SizedBox(
       width: _deviceWidth * 0.70,
       child: const TextField(
         obscureText: true,
